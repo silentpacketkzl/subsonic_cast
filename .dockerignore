@@ -1,0 +1,9 @@
+.git
+.gitignore
+*.log
+scratch/
+start.bat
+node-portable/
+test_node.txt
+.DS_Store
+Thumbs.db

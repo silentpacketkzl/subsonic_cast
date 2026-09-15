@@ -1,0 +1,233 @@
+/* ==========================================================================
+   PC Speaker Receiver Dashboard Styles
+   ========================================================================== */
+
+:root {
+  --bg-main: #0c0d12;
+  --bg-card: rgba(255, 255, 255, 0.05);
+  --border-card: rgba(255, 255, 255, 0.09);
+  --text-primary: #ffffff;
+  --text-muted: rgba(255, 255, 255, 0.6);
+  --connect-green: #1ed760;
+  --connect-glow: rgba(30, 215, 96, 0.35);
+  --accent-pink: #fa2d48;
+  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+  background-image: radial-gradient(circle at 10% 20%, rgba(30, 215, 96, 0.08) 0%, transparent 40%),
+                    radial-gradient(circle at 90% 80%, rgba(121, 40, 202, 0.1) 0%, transparent 50%);
+}
+
+.receiver-navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 32px;
+  background: rgba(18, 18, 24, 0.7);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border-card);
+}
+
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.navbar-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(30, 215, 96, 0.15);
+  border: 1px solid var(--connect-green);
+  color: var(--connect-green);
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--connect-green);
+  box-shadow: 0 0 8px var(--connect-green);
+  animation: pulse 1.5s infinite;
+}
+
+.receiver-main {
+  flex: 1;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 36px 32px;
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 32px;
+  align-items: start;
+}
+
+@media (max-width: 850px) {
+  .receiver-main {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Now Playing Card */
+.player-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-radius: 24px;
+  padding: 32px;
+  backdrop-filter: blur(24px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+}
+
+.album-visual-box {
+  position: relative;
+  width: 100%;
+  max-width: 380px;
+  aspect-ratio: 1 / 1;
+  margin: 0 auto 28px auto;
+}
+
+.speaker-artwork {
+  width: 100%;
+  height: 100%;
+  border-radius: 20px;
+  object-fit: cover;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.player-card.playing .speaker-artwork {
+  transform: scale(1.02);
+  box-shadow: 0 20px 48px rgba(30, 215, 96, 0.25);
+}
+
+/* Audio Visualizer Canvas */
+.visualizer-canvas {
+  width: 100%;
+  height: 70px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.3);
+  margin-bottom: 24px;
+}
+
+.track-headline {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.track-name {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.artist-name {
+  font-size: 16px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* Receiver Info & Pairing Card */
+.sidebar-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.info-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-radius: 20px;
+  padding: 24px;
+  backdrop-filter: blur(20px);
+}
+
+.info-title {
+  font-size: 17px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.connection-box {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 12px;
+}
+
+.qr-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding: 20px;
+  background: #fff;
+  color: #000;
+  border-radius: 14px;
+  margin: 16px auto;
+  max-width: 200px;
+}
+
+.url-code-pill {
+  display: inline-block;
+  background: rgba(30, 215, 96, 0.1);
+  border: 1px solid var(--connect-green);
+  color: #1ed760;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-family: monospace;
+  font-size: 15px;
+  margin-top: 8px;
+  word-break: break-all;
+}
+
+.status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 14px;
+}
+
+.status-row:last-child {
+  border-bottom: none;
+}
+
+.status-label {
+  color: var(--text-muted);
+}
+
+.status-value {
+  font-weight: 600;
+}
+
+@keyframes pulse {
+  0% { transform: scale(0.95); opacity: 0.8; }
+  50% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(0.95); opacity: 0.8; }
+}

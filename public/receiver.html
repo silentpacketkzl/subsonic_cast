@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Arpeggi Connect - PC Speaker Receiver</title>
+  <link rel="stylesheet" href="css/receiver.css">
+</head>
+<body>
+  <nav class="receiver-navbar">
+    <div class="navbar-brand">
+      <svg viewBox="0 0 24 24" width="28" height="28" fill="#1ed760">
+        <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+      </svg>
+      <h1 style="font-size: 20px; font-weight: 700;">Arpeggi Connect Receiver</h1>
+    </div>
+    <div class="navbar-badge">
+      <span class="pulse-dot"></span>
+      <span id="receiverStatusText">Receiver Online &bull; Speakers Ready</span>
+    </div>
+  </nav>
+
+  <main class="receiver-main">
+    <!-- Active Playing Output Box -->
+    <div id="playerCard" class="player-card">
+      <div class="album-visual-box">
+        <img id="speakerArt" class="speaker-artwork" src="https://picsum.photos/seed/default/400/400" alt="Album Art">
+      </div>
+
+      <!-- Real-time Web Audio Visualizer -->
+      <canvas id="visualizerCanvas" class="visualizer-canvas"></canvas>
+
+      <div class="track-headline">
+        <h2 id="speakerTitle" class="track-name">Ready for Cast</h2>
+        <p id="speakerArtist" class="artist-name">Select "Windows PC (Speakers)" from your iPhone Arpeggi app</p>
+      </div>
+
+      <!-- Scrubber -->
+      <div style="margin-bottom: 20px;">
+        <div style="height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden;">
+          <div id="speakerProgressBar" style="width: 0%; height: 100%; background: #1ed760; transition: width 0.2s linear;"></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 13px; color: var(--text-muted); margin-top: 6px;">
+          <span id="speakerCurrentTime">0:00</span>
+          <span id="speakerDuration">0:00</span>
+        </div>
+      </div>
+
+      <!-- Local PC Audio Controls (Optional Manual Override) -->
+      <div style="display: flex; align-items: center; justify-content: center; gap: 20px;">
+        <button id="pcPlayPauseBtn" style="padding: 10px 24px; border-radius: 20px; background: #1ed760; border: none; font-weight: 700; color: #000; cursor: pointer;">
+          Play / Pause
+        </button>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 13px; color: var(--text-muted);">PC Speaker Volume:</span>
+          <input id="pcVolumeSlider" type="range" min="0" max="1" step="0.01" value="0.8" style="cursor: pointer;">
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar: Connection Info & Status -->
+    <div class="sidebar-panel">
+      <!-- Phone Connection Instructions -->
+      <div class="info-card">
+        <div class="info-title">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#1ed760" stroke-width="2">
+            <rect x="5" y="2" width="14" height="20" rx="3"/><line x1="12" y1="18" x2="12" y2="18.01"/>
+          </svg>
+          <span>Connect Your iPhone</span>
+        </div>
+        <p style="font-size: 14px; color: var(--text-muted); line-height: 1.5;">
+          Open the Arpeggi player on your iPhone Safari browser and tap <b>"Add to Home Screen"</b>:
+        </p>
+
+        <div class="connection-box">
+          <div style="font-size: 12px; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">iPhone URL:</div>
+          <div id="mobileUrlDisplay" class="url-code-pill">Loading network URL...</div>
+        </div>
+
+        <div style="margin-top: 16px; font-size: 13px; color: var(--text-muted); line-height: 1.5;">
+          💡 <b>Tip:</b> When your phone is on the same local Wi-Fi, tap the Cast icon in Arpeggi and choose <b>"Windows PC (Speakers)"</b>. Music will play through your computer's speakers while you control it from anywhere in your home!
+        </div>
+      </div>
+
+      <!-- Receiver Diagnostics -->
+      <div class="info-card">
+        <div class="info-title">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#1ed760" stroke-width="2">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+          </svg>
+          <span>Receiver Diagnostics</span>
+        </div>
+        <div class="status-row">
+          <span class="status-label">Device Name:</span>
+          <span class="status-value">Windows PC (Speakers)</span>
+        </div>
+        <div class="status-row">
+          <span class="status-label">Audio Output:</span>
+          <span class="status-value">Default Sound Card</span>
+        </div>
+        <div class="status-row">
+          <span class="status-label">Cast Protocol:</span>
+          <span class="status-value">Arpeggi Connect / WebSocket</span>
+        </div>
+        <div class="status-row">
+          <span class="status-label">Current Cast Mode:</span>
+          <span id="castModeValue" class="status-value" style="color: #1ed760;">Standby (Ready)</span>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/subsonic.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/connect.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const audio = new Audio();
+      audio.preload = 'auto';
+      audio.crossOrigin = 'anonymous';
+
+      // Connect Client registering as the PC Receiver
+      const connect = new ConnectClient({
+        clientName: 'Windows PC (Speakers)',
+        clientType: 'pc-receiver',
+        isReceiver: true
+      });
+
+      // Fetch Local IP info for iPhone display
+      try {
+        const res = await fetch('/api/info');
+        const info = await res.json();
+        document.getElementById('mobileUrlDisplay').textContent = info.mobileUrl;
+      } catch (e) {
+        document.getElementById('mobileUrlDisplay').textContent = `http://${window.location.host}/`;
+      }
+
+      // UI Elements
+      const playerCard = document.getElementById('playerCard');
+      const speakerArt = document.getElementById('speakerArt');
+      const speakerTitle = document.getElementById('speakerTitle');
+      const speakerArtist = document.getElementById('speakerArtist');
+      const speakerProgressBar = document.getElementById('speakerProgressBar');
+      const speakerCurrentTime = document.getElementById('speakerCurrentTime');
+      const speakerDuration = document.getElementById('speakerDuration');
+      const pcPlayPauseBtn = document.getElementById('pcPlayPauseBtn');
+      const pcVolumeSlider = document.getElementById('pcVolumeSlider');
+      const castModeValue = document.getElementById('castModeValue');
+      const canvas = document.getElementById('visualizerCanvas');
+      const canvasCtx = canvas.getContext('2d');
+
+      let currentSong = null;
+      let audioCtx = null;
+      let analyser = null;
+      let audioSource = null;
+
+      function formatTime(seconds) {
+        if (!Number.isFinite(seconds) || seconds < 0) return '0:00';
+        const mins = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+      }
+
+      // Initialize Web Audio Visualizer
+      function initVisualizer() {
+        if (audioCtx) return;
+        try {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          audioCtx = new AudioContext();
+          analyser = audioCtx.createAnalyser();
+          analyser.fftSize = 64;
+
+          audioSource = audioCtx.createMediaElementSource(audio);
+          audioSource.connect(analyser);
+          analyser.connect(audioCtx.destination);
+
+          drawVisualizer();
+        } catch (e) {
+          console.warn('Web Audio visualizer could not be initialized:', e);
+        }
+      }
+
+      function drawVisualizer() {
+        requestAnimationFrame(drawVisualizer);
+        if (!analyser) return;
+
+        const bufferLength = analyser.frequencyBinCount;
+        const dataArray = new Uint8Array(bufferLength);
+        analyser.getByteFrequencyData(dataArray);
+
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+
+        canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+
+        const barWidth = (canvas.width / bufferLength) * 1.5;
+        let x = 0;
+
+        for (let i = 0; i < bufferLength; i++) {
+          const barHeight = (dataArray[i] / 255) * canvas.height;
+          const r = 30 + Math.floor((i / bufferLength) * 200);
+          const g = 215;
+          const b = 96;
+
+          canvasCtx.fillStyle = `rgb(${r},${g},${b})`;
+          canvasCtx.fillRect(x, canvas.height - barHeight, barWidth - 2, barHeight);
+          x += barWidth;
+        }
+      }
+
+      // Audio Event Handlers
+      audio.addEventListener('play', () => {
+        playerCard.classList.add('playing');
+        castModeValue.textContent = 'Streaming to Speakers';
+        syncState(true);
+      });
+
+      audio.addEventListener('pause', () => {
+        playerCard.classList.remove('playing');
+        castModeValue.textContent = 'Paused';
+        syncState(false);
+      });
+
+      audio.addEventListener('timeupdate', () => {
+        if (audio.duration) {
+          const pct = (audio.currentTime / audio.duration) * 100;
+          speakerProgressBar.style.width = `${pct}%`;
+          speakerCurrentTime.textContent = formatTime(audio.currentTime);
+          speakerDuration.textContent = formatTime(audio.duration);
+        }
+        syncState(!audio.paused);
+      });
+
+      function syncState(isPlaying) {
+        connect.syncReceiverState({
+          deviceId: 'pc-speaker-1',
+          isPlaying: isPlaying,
+          currentSong: currentSong,
+          position: audio.currentTime,
+          duration: audio.duration || 0,
+          volume: audio.volume
+        });
+      }
+
+      // Handle Remote Commands from Mobile iOS App
+      connect.on('remoteCommand', async ({ command, payload }) => {
+        console.log('[PC Receiver] Received remote command:', command, payload);
+        initVisualizer();
+        if (audioCtx && audioCtx.state === 'suspended') {
+          await audioCtx.resume();
+        }
+
+        switch (command) {
+          case 'PLAY':
+            if (payload.song) {
+              currentSong = payload.song;
+              speakerTitle.textContent = currentSong.title;
+              speakerArtist.textContent = currentSong.artist;
+              if (currentSong.coverArt) {
+                speakerArt.src = currentSong.coverArt;
+              }
+              const streamUrl = currentSong.streamUrl || currentSong.url;
+              if (audio.src !== streamUrl) {
+                audio.src = streamUrl;
+              }
+            }
+            if (payload.position !== undefined) {
+              audio.currentTime = payload.position;
+            }
+            try {
+              await audio.play();
+            } catch (err) {
+              console.error('Audio play error on PC:', err);
+            }
+            break;
+
+          case 'PAUSE':
+            audio.pause();
+            break;
+
+          case 'SEEK':
+            if (payload.position !== undefined) {
+              audio.currentTime = payload.position;
+            }
+            break;
+
+          case 'SET_VOLUME':
+            if (payload.volume !== undefined) {
+              audio.volume = Math.max(0, Math.min(1, payload.volume));
+              pcVolumeSlider.value = audio.volume;
+            }
+            break;
+        }
+      });
+
+      // Handle Playback Transfer from iPhone to PC
+      connect.on('playbackTransferred', async ({ targetDeviceId, state }) => {
+        if (targetDeviceId === 'pc-speaker-1') {
+          initVisualizer();
+          if (audioCtx && audioCtx.state === 'suspended') {
+            await audioCtx.resume();
+          }
+
+          if (state.currentSong) {
+            currentSong = state.currentSong;
+            speakerTitle.textContent = currentSong.title;
+            speakerArtist.textContent = currentSong.artist;
+            if (currentSong.coverArt) {
+              speakerArt.src = currentSong.coverArt;
+            }
+            const streamUrl = currentSong.streamUrl || currentSong.url;
+            audio.src = streamUrl;
+            if (state.position) {
+              audio.currentTime = state.position;
+            }
+            if (state.isPlaying) {
+              try {
+                await audio.play();
+              } catch (e) {}
+            }
+          }
+        }
+      });
+
+      // PC UI controls
+      pcPlayPauseBtn.addEventListener('click', () => {
+        initVisualizer();
+        if (audio.paused) {
+          audio.play();
+        } else {
+          audio.pause();
+        }
+      });
+
+      pcVolumeSlider.addEventListener('input', () => {
+        audio.volume = parseFloat(pcVolumeSlider.value);
+        syncState(!audio.paused);
+      });
+    });
+  </script>
+</body>
+</html>
