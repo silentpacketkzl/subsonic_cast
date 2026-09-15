@@ -1,0 +1,30 @@
+name: ArpeggiCast
+options:
+  bundleIdPrefix: com.arpeggicast
+  deploymentTarget:
+    iOS: "16.0"
+
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    CODE_SIGNING_ALLOWED: NO
+    CODE_SIGNING_REQUIRED: NO
+    CODE_SIGN_IDENTITY: ""
+
+targets:
+  ArpeggiCast:
+    type: application
+    platform: iOS
+    deploymentTarget: "16.0"
+    sources:
+      - path: ArpeggiCast
+    info:
+      path: ArpeggiCast/Info.plist
+    settings:
+      base:
+        PRODUCT_NAME: ArpeggiCast
+        PRODUCT_BUNDLE_IDENTIFIER: com.arpeggicast.player
+        GENERATE_INFOPLIST_FILE: NO
+        INFOPLIST_FILE: ArpeggiCast/Info.plist
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ENABLE_PREVIEWS: YES
