@@ -26,6 +26,10 @@ jobs:
         run: |
           cd ios-app
           xcodegen generate
+          # Patch project file for Xcode 15 compatibility (downgrade objectVersion from 77 to 56)
+          perl -pi -e 's/objectVersion = \d+;/objectVersion = 56;/g' ArpeggiCast.xcodeproj/project.pbxproj
+          perl -pi -e 's/compatibilityVersion = "Xcode [^"]+";/compatibilityVersion = "Xcode 14.0";/g' ArpeggiCast.xcodeproj/project.pbxproj
+          head -n 12 ArpeggiCast.xcodeproj/project.pbxproj
 
       - name: Build and Archive iOS App
         run: |
