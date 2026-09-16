@@ -1,26 +1,27 @@
-<<<<<<< HEAD
-# 🎵 Arpeggi Subsonic Music Player with Spotify Connect Speaker Casting
+# 🎵 ArpeggiCast - Subsonic Music Player with Spotify Connect Speaker Casting
 
-A modern, responsive Subsonic & Navidrome music player styled with the **Arpeggi / Apple Music iOS** aesthetic, featuring **Spotify Connect-like device casting** to play and stream music through your computer's connected speakers.
+A modern, responsive Subsonic & Navidrome music streaming ecosystem styled with the **Apple Music / iOS** aesthetic, featuring **Spotify Connect-like PC speaker casting** to stream music directly through your computer's connected sound system.
+
+The project contains two complementary clients:
+1. **Web / PWA Client** (`public/`, zero-dependency Node server & Docker) — Works in any browser, zero install, add to iPhone Home Screen.
+2. **Native iOS App** (`ios-app/`, Swift & SwiftUI) — Full native iOS app with background audio, lock screen controls, and automated cloud `.ipa` builds via GitHub Actions.
 
 ---
 
 ## 🌟 Key Features
 
-1. **Arpeggi & Apple Music Design Language**:
+1. **Apple Music iOS Design Language**:
    - iOS Cupertino typography and sleek dark mode.
    - Dynamic ambient background glow that shifts color based on album artwork.
    - Frosted glass tab bar navigation (`Listen Now`, `Library`, `Search`, `Connect`).
    - Floating bottom Mini-Player and full-screen expandable Now Playing sheet.
-   - Lock screen & dynamic island controls via the iOS MediaSession API.
-   - Progressive Web App (PWA) ready: tap **"Add to Home Screen"** on iPhone Safari for a full-screen, native app experience without needing a Mac, Xcode, or sideloading!
+   - Lock screen & dynamic island controls via the iOS MediaSession API and native `MPRemoteCommandCenter`.
 
 2. **Full Subsonic & Navidrome Integration**:
    - Compatible with **Navidrome**, **Gonic**, **Airsonic**, and any Subsonic/OpenSubsonic server.
    - Secure token-based authentication (`salt` + MD5 `token` with `v=1.16.1`).
    - Real-time library search across artists, albums, and tracks.
    - Built-in CORS proxy to prevent browser cross-origin audio streaming blocks.
-   - Includes high-quality demo ambient/synthwave tracks for immediate out-of-the-box testing.
 
 3. **Spotify Connect-Style Speaker Casting**:
    - **Cast to PC Speakers**: Stream high-fidelity audio directly from your Navidrome server through your computer's sound card and connected speakers.
@@ -56,15 +57,22 @@ Once started:
 - Relay server is available on port `8080`.
 - Open the **PC Speaker Receiver** at `http://localhost:8080/receiver.html` to output audio through your computer speakers.
 
-
 ### 2. Connect from Your iPhone
+
+#### Method 1: Web App / PWA (Instant - No Sideloading Required)
 1. Make sure your iPhone is connected to the same Wi-Fi network as your PC.
-2. Open Safari on your iPhone and visit the Mobile URL displayed on the PC Receiver screen (e.g., `http://100.66.160.147:8080/` or your local Wi-Fi IP).
+2. Open Safari on your iPhone and visit the Mobile URL displayed on the PC Receiver screen (e.g., `http://<your-pc-ip>:8080/`).
 3. Tap the **Share** button in Safari and select **"Add to Home Screen"**.
 4. Open the **Arpeggi** app from your iPhone home screen!
 
+#### Method 2: Native iOS App (Built via GitHub Actions)
+See [`SIDELOAD_GUIDE.md`](SIDELOAD_GUIDE.md) for full instructions:
+1. Every push triggers `.github/workflows/build-ios.yml` which builds `ArpeggiCast.ipa` on a macOS runner.
+2. Download `ArpeggiCast.ipa` from the GitHub Actions Artifacts tab.
+3. Install onto your iPhone in 2 minutes using **Sideloadly** or **AltStore**.
+
 ### 3. Connect to Your Navidrome Server
-1. In the Arpeggi app, tap the **Gear / Settings** icon in the top right.
+1. In Arpeggi / ArpeggiCast, tap the **Gear / Settings** icon in the top right.
 2. Enter your Navidrome details:
    - **Server URL**: `http://<your-server-ip>:4533` (or your domain/HTTPS URL)
    - **Username**: Your Navidrome username
@@ -80,95 +88,44 @@ Once started:
 
 ---
 
-## 📁 Project Architecture
+## 📁 Repository Structure
 
 ```
-Antigravity/
-├── server.js               # Zero-dependency Node.js server (Static host + WebSocket Connect Relay + Subsonic Proxy)
-├── start.bat               # One-click Windows startup script
-├── test.js                 # Verification and test suite
-├── public/
-│   ├── index.html          # Main iOS Arpeggi Music Player UI
-│   ├── receiver.html       # PC Speaker Receiver dashboard with real-time audio visualizer
-│   ├── manifest.json       # PWA manifest for iOS Home Screen standalone installation
+├── .github/workflows/
+│   └── build-ios.yml        # Automated macOS GitHub Actions runner building ArpeggiCast.ipa
+├── server.js                # Zero-dependency Node.js server (Static host + WebSocket Connect Relay + Subsonic Proxy)
+├── start.bat                # One-click Windows startup script
+├── test.js                  # Verification and test suite
+├── SIDELOAD_GUIDE.md        # Step-by-step sideloading guide for iPhone
+├── public/                  # Web App & PC Receiver
+│   ├── index.html           # Main iOS Arpeggi Music Player UI
+│   ├── receiver.html        # PC Speaker Receiver dashboard with real-time audio visualizer
+│   ├── manifest.json        # PWA manifest for iOS Home Screen standalone installation
 │   ├── css/
-│   │   ├── style.css       # Apple Music Cupertino design system & dynamic ambient glow
-│   │   └── receiver.css    # PC Speaker Receiver dashboard styling
-│   ├── js/
-│   │   ├── subsonic.js     # Navidrome/Subsonic API client (token auth, albums, songs, stream, coverArt)
-│   │   ├── player.js       # Local audio player engine & iOS MediaSession API sync
-│   │   ├── connect.js      # Spotify Connect casting client (WebSocket device sync & handoff)
-│   │   └── app.js          # Arpeggi app controller, navigation, and queue management
-│   └── icons/
-│       └── icon.svg        # High-res vector app icon
-=======
-# 📱 ArpeggiCast - Native iOS Subsonic Player with Speaker Casting
-
-A **100% pure native iOS application** written in **Swift & SwiftUI** designed to stream music from **Navidrome / Subsonic** servers, featuring a built-in **Spotify Connect-style casting engine** to play music out of your computer's connected speakers.
-
----
-
-## 🌟 Architecture & Features
-
-- **Framework**: Native **SwiftUI** (iOS 16+) with Cupertino styling and dynamic color ambient blurs.
-- **Audio Engine**: Apple **AVFoundation** (`AVPlayer`, `AVAudioSession`) with background audio playback capability.
-- **Lock Screen Integration**: Native `MPNowPlayingInfoCenter` and `MPRemoteCommandCenter` for lock-screen scrubbing and playback controls.
-- **Subsonic API**: Built-in Swift client with **MD5 Token Authentication** (`u`, `t`, `s`, `v=1.16.1`, `f=json`).
-- **Spotify Connect Casting**: Uses native `URLSessionWebSocketTask` to stream / cast / control playback on the PC speakers with sub-100ms latency.
-
----
-
-## 📁 Native Project Structure
-
-```
-ios-app/
-├── Package.swift                    # Swift Package Manager manifest
-├── ArpeggiCast/
-│   ├── Info.plist                   # Background audio & local network permissions
-│   ├── ArpeggiCastApp.swift         # @main entry point
-│   ├── Models/
-│   │   ├── Song.swift               # Track model
-│   │   ├── Album.swift              # Album model
-│   │   └── CastDevice.swift         # Device target (Local vs Remote PC)
-│   ├── Services/
-│   │   ├── SubsonicService.swift    # Navidrome Subsonic REST API (MD5 Token auth)
-│   │   ├── AudioPlayerService.swift # AVPlayer + MPRemoteCommandCenter
-│   │   └── CastService.swift        # URLSessionWebSocketTask client for PC Speaker Casting
-│   ├── ViewModels/
-│   │   ├── PlayerViewModel.swift    # Playback state, queue, scrubber, casting handoff
-│   │   └── LibraryViewModel.swift   # Navidrome library fetching, caching, search
-│   └── Views/
-│       ├── MainTabView.swift        # Native Cupertino tab navigation
-│       ├── ListenNowView.swift      # Featured albums carousel & recent tracks
-│       ├── MiniPlayerView.swift     # Bottom floating mini-player bar
-│       ├── NowPlayingSheet.swift    # Full-screen Apple Music player with dynamic blur
-│       ├── DevicePickerSheet.swift  # Spotify Connect device selector ("Connect to a device")
-│       ├── SearchView.swift         # Real-time search
-│       └── SettingsView.swift       # Navidrome server credentials setup
-└── README.md
->>>>>>> 73b05fb8955adb132719999c28d55732105a049d
+│   │   ├── style.css        # Apple Music Cupertino design system & dynamic ambient glow
+│   │   └── receiver.css     # PC Speaker Receiver dashboard styling
+│   └── js/
+│       ├── subsonic.js      # Navidrome/Subsonic API client (token auth, albums, songs, stream, coverArt)
+│       ├── player.js        # Local audio player engine & iOS MediaSession API sync
+│       ├── connect.js       # Spotify Connect casting client (WebSocket device sync & handoff)
+│       └── app.js           # Arpeggi app controller, navigation, and queue management
+└── ios-app/                 # Native Swift & SwiftUI iOS Application
+    ├── project.yml          # XcodeGen specification for clean project generation
+    ├── Package.swift        # Swift Package Manager manifest
+    └── ArpeggiCast/         # Native iOS application source code
+        ├── Info.plist       # Permissions (Background audio, Local network)
+        ├── ArpeggiCastApp.swift # App entry point
+        ├── Models/          # Song, Album, CastDevice
+        ├── Services/        # SubsonicService, AudioPlayerService, CastService
+        ├── ViewModels/      # PlayerViewModel, LibraryViewModel
+        └── Views/           # SwiftUI views (MainTab, ListenNow, MiniPlayer, NowPlaying, DevicePicker, Search, Settings)
 ```
 
 ---
 
-<<<<<<< HEAD
 ## 🧪 Running Automated Tests
 
 Run the test suite at any time to verify system integrity:
 ```powershell
 & "$env:LOCALAPPDATA\Programs\node-portable\node.exe" test.js
 ```
-=======
-## 🛠️ How to Build & Run on iPhone
-
-### Option 1: Open in Xcode (on any Mac)
-1. Open the `ios-app/` folder in **Xcode 15+**.
-2. Select your connected iPhone or an iOS Simulator.
-3. Click **Run (Cmd + R)**.
-
-### Option 2: Automatic Cloud Build (from Windows via GitHub Actions)
-1. Push this repository to GitHub.
-2. The workflow in [`.github/workflows/build-ios.yml`](../.github/workflows/build-ios.yml) will automatically run on a free macOS-14 cloud runner.
-3. Download the compiled `.ipa` artifact from the GitHub Actions tab.
-4. Install it on your iPhone using **AltStore**, **SideStore**, or **Sideloadly** from your Windows computer!
->>>>>>> 73b05fb8955adb132719999c28d55732105a049d

@@ -38,7 +38,8 @@ jobs:
             -archivePath build/ArpeggiCast.xcarchive \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGN_IDENTITY=""
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGN_ENTITLEMENTS=""
 
       - name: Package IPA for Sideloading (AltStore / SideStore / Sideloadly)
         run: |
